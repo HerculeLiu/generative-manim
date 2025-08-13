@@ -54,7 +54,7 @@ def construct(self):
             return jsonify({"error": str(e)}), 500
 
     else:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url = os.environ.get("OPENAI_BASE_URL"))
         messages = [
             {"role": "system", "content": general_system_prompt},
             {"role": "user", "content": prompt_content},

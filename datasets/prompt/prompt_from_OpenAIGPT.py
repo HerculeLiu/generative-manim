@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
 # Define the GPT-4 model endpoint
-llm = ChatOpenAI(model="gpt-4", openai_api_key=os.environ["OPENAI_API_KEY"])
+llm = ChatOpenAI(model="deepseek-r1", openai_api_key=os.environ["OPENAI_API_KEY"], base_url = os.environ.get("OPENAI_BASE_URL"))
 
 # input and output
 chain = ChatPromptTemplate.from_messages(
