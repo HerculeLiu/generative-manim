@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Generative Manim</title>
+    <style>
+      :root {
+        --bg: #0f1216;
+        --panel: #151a21;
+        --text: #e6e8ec;
+        --muted: #9aa3af;
+        --accent: #4dd4b4;
+        --border: #2a313d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", "SF Pro Display", "Helvetica Neue", sans-serif;
+        background: radial-gradient(1200px 600px at 10% -10%, #1d2a35, transparent),
+          radial-gradient(1200px 600px at 110% 0%, #1b1f2a, transparent),
+          var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 20px 48px;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      h1 {
+        font-size: 28px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .subtitle {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      textarea,
+      input,
+      select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #0e1319;
+        color: var(--text);
+        padding: 10px 12px;
+        font-size: 14px;
+        outline: none;
+      }
+      textarea {
+        min-height: 160px;
+        resize: vertical;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      button {
+        border: none;
+        background: var(--accent);
+        color: #0a1014;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 120ms ease;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+      .status {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .video {
+        width: 100%;
+        border-radius: 10px;
+        background: #0e1319;
+        border: 1px solid var(--border);
+        min-height: 200px;
+      }
+      .helper {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .scene-board {
+        grid-column: 2 / span 2;
+      }
+      .scene-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 620px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+      .scene-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .scene-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        background: #0f141b;
+      }
+      .scene-title {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .scene-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .placeholder {
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        color: var(--muted);
+        font-size: 13px;
+        text-align: center;
+      }
+      @media (max-width: 880px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .scene-board {
+          grid-column: auto;
+        }
+        .scene-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Generative Manim</h1>
+        <span class="subtitle">Script to scenes to renders, powered by DeepSeek</span>
+      </header>
+      <div class="grid">
+        <div class="panel">
+          <label for="story">Video Script</label>
+          <textarea id="story">想象一下，这里有一根线，我们把它分成三份，首尾相接，组成一个三角形，这个三角形的面积是多少？
+            如果我们把分成的段数变多，从 4 边形，五边形，到六边形七边形。面积是多少？
+            
+            想象一下这里有 1,1,2,3,5,8,13,21......
+            
+            这样一组数字，这组数字有什么规律么？
+            
+            我们可以看到这组数字是从第三个开始，每一个数字都是前两个数字相加和。</textarea>
+          <div class="row">
+            <div>
+              <label for="engine">Engine</label>
+              <select id="engine">
+                <option value="deepseek" selected>deepseek</option>
+              </select>
+            </div>
+            <div>
+              <label for="model">Model</label>
+              <input id="model" value="deepseek-reasoner" />
+            </div>
+          </div>
+          <div class="actions">
+            <button id="split">Split Into Scenes</button>
+            <button id="generateAll" class="secondary">Generate All</button>
+            <span id="status" class="status">Ready.</span>
+          </div>
+          <div class="helper">
+            Tip: describe the full narrative; the LLM will rewrite it into clear Manim scene prompts.
+          </div>
+        </div>
+        <div class="panel scene-board">
+          <div class="panel-header">
+            <span>Scenes</span>
+            <span class="chip" id="sceneCount">0 scenes</span>
+          </div>
+          <div id="sceneBoard" class="scene-stack"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const splitBtn = document.getElementById("split");
+      const generateAllBtn = document.getElementById("generateAll");
+      const statusEl = document.getElementById("status");
+      const sceneBoardEl = document.getElementById("sceneBoard");
+      const sceneCountEl = document.getElementById("sceneCount");
+
+      const state = {
+        scenes: [],
+      };
+
+      function setStatus(text) {
+        statusEl.textContent = text;
+      }
+
+      function buildSceneCard(scene, index) {
+        const card = document.createElement("div");
+        card.className = "scene-card";
+
+        const title = document.createElement("p");
+        title.className = "scene-title";
+        title.textContent = `Scene ${index + 1}`;
+
+        const textarea = document.createElement("textarea");
+        textarea.value = scene.text;
+        textarea.addEventListener("input", (event) => {
+          state.scenes[index].text = event.target.value;
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "scene-actions";
+
+        const status = document.createElement("span");
+        status.className = "chip";
+        status.textContent = scene.status || "Ready";
+
+        const button = document.createElement("button");
+        button.className = "secondary";
+        button.textContent = "Generate";
+        button.addEventListener("click", () => generateScene(index));
+
+        actions.appendChild(status);
+        actions.appendChild(button);
+
+        card.appendChild(title);
+        card.appendChild(textarea);
+        card.appendChild(actions);
+
+        return card;
+      }
+
+      function buildRenderCard(scene, index) {
+        const card = document.createElement("div");
+        card.className = "scene-card";
+
+        const title = document.createElement("p");
+        title.className = "scene-title";
+        title.textContent = `Scene ${index + 1}`;
+
+        if (scene.video_url) {
+          const video = document.createElement("video");
+          video.className = "video";
+          video.controls = true;
+          video.src = scene.video_url;
+
+          const link = document.createElement("div");
+          link.className = "helper";
+          link.textContent = scene.video_url;
+
+          card.appendChild(title);
+          card.appendChild(video);
+          card.appendChild(link);
+        } else {
+          const placeholder = document.createElement("div");
+          placeholder.className = "placeholder";
+          placeholder.textContent = "No render yet.";
+          card.appendChild(title);
+          card.appendChild(placeholder);
+        }
+
+        return card;
+      }
+
+      function renderScenes() {
+        sceneBoardEl.innerHTML = "";
+
+        if (!state.scenes.length) {
+          const empty = document.createElement("div");
+          empty.className = "placeholder";
+          empty.textContent = "Split your script to see scene prompts here.";
+          sceneBoardEl.appendChild(empty);
+        } else {
+          state.scenes.forEach((scene, index) => {
+            const row = document.createElement("div");
+            row.className = "scene-row";
+            row.appendChild(buildSceneCard(scene, index));
+            row.appendChild(buildRenderCard(scene, index));
+            sceneBoardEl.appendChild(row);
+          });
+        }
+
+        const readyCount = state.scenes.filter((scene) => scene.video_url).length;
+        sceneCountEl.textContent = `${state.scenes.length} scenes · ${readyCount} ready`;
+      }
+
+      async function splitStory() {
+        const story = document.getElementById("story").value.trim();
+        const engine = document.getElementById("engine").value.trim();
+        const model = document.getElementById("model").value.trim();
+        if (!story) {
+          setStatus("Script is required.");
+          return;
+        }
+
+        setStatus("Splitting with LLM...");
+
+        try {
+          const res = await fetch("/v1/video/splitting", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ script: story, engine, model }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            const message = data && data.error ? data.error : "Split failed";
+            setStatus(message);
+            return;
+          }
+
+          const prompts = Array.isArray(data.scenes) ? data.scenes : [];
+          state.scenes = prompts.map((item) => ({
+            text: item.prompt || "",
+            status: "Ready",
+            video_url: "",
+          }));
+
+          if (!state.scenes.length) {
+            setStatus("No scenes returned.");
+            renderScenes();
+            return;
+          }
+
+          setStatus(`Split into ${state.scenes.length} scenes.`);
+          renderScenes();
+        } catch (err) {
+          setStatus("Network error.");
+        }
+      }
+
+      async function generateScene(index) {
+        const scene = state.scenes[index];
+        const prompt = scene.text.trim();
+        const engine = document.getElementById("engine").value.trim();
+        const model = document.getElementById("model").value.trim();
+
+        if (!prompt) {
+          scene.status = "Empty prompt.";
+          renderScenes();
+          return;
+        }
+
+        scene.status = "Generating...";
+        renderScenes();
+
+        try {
+          const res = await fetch("/v1/video/generation", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ prompt, engine, model }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            const message = data && data.error ? data.error : "Request failed";
+            scene.status = message;
+            renderScenes();
+            return;
+          }
+
+          if (data.video_url) {
+            scene.video_url = data.video_url;
+            scene.status = "Done.";
+          } else {
+            scene.status = "No video URL returned.";
+          }
+        } catch (err) {
+          scene.status = "Network error.";
+        }
+
+        renderScenes();
+      }
+
+      async function generateAllScenes() {
+        if (!state.scenes.length) {
+          setStatus("No scenes yet. Split the script first.");
+          return;
+        }
+
+        setStatus("Generating all scenes...");
+        for (let index = 0; index < state.scenes.length; index += 1) {
+          await generateScene(index);
+        }
+        setStatus("All scenes finished.");
+      }
+
+      splitBtn.addEventListener("click", splitStory);
+      generateAllBtn.addEventListener("click", generateAllScenes);
+
+      renderScenes();
+    </script>
+  </body>
+</html>

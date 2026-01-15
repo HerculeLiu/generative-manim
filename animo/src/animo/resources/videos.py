@@ -47,8 +47,8 @@ class Videos:
     def generate(
         self,
         prompt: str,
-        engine: str = "anthropic",
-        model: str = "claude-3-7-sonnet-20250219"
+        engine: str = "deepseek",
+        model: str = "deepseek-chat"
     ) -> Dict[str, Any]:
         """
         Generate a video from a text prompt using AI.

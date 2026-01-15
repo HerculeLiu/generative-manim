@@ -73,6 +73,15 @@ def get_frame_config(aspect_ratio):
     else:
         return (3840, 2160), 14.22
 
+def strip_code_fences(code: str) -> str:
+    if not code:
+        return code
+    lines = code.splitlines()
+    if lines and lines[0].strip().startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip().startswith("```"):
+        lines = lines[:-1]
+    return "\n".join(lines).strip()
 
 @video_rendering_bp.route("/v1/video/rendering", methods=["POST"])
 def render_video():
@@ -92,7 +101,7 @@ def render_video():
     # run_id = create_run_on_user(user_id, "video")
     
     # Extract the rest of the request data
-    code = request.json.get("code")
+    code = strip_code_fences(request.json.get("code"))
     file_name = request.json.get("file_name")
     file_class = request.json.get("file_class")
 

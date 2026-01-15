@@ -181,6 +181,7 @@ paths:
                     type: string
                     description: Error message.
 
+
   /v1/chat/generation:
     post:
       summary: Generate Chat-based Manim Code

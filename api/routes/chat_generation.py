@@ -87,7 +87,7 @@ def manage_conversation_images(messages, new_images_count, engine):
     For OpenAI, we maintain only the last 50 images.
     Returns the maximum number of new images we can add.
     """
-    if engine != "openai":
+    if engine not in ("openai", "deepseek"):
         return len(new_images_count)  # No limit for other engines
         
     MAX_IMAGES = 50
@@ -126,16 +126,14 @@ def generate_code_chat():
     user_id = data.get("userId") or f"user-{uuid.uuid4()}"
     scenes = data.get("scenes", [])
     project_title = data.get("projectTitle", "")
-    engine = data.get("engine", "openai")
+    engine = data.get("engine", "deepseek")
     model = data.get("model", None)  # Optional model parameter
     selected_scenes = data.get("selectedScenes", [])
     is_for_platform = data.get("isForPlatform", False)
 
     # Define default models for each engine
     ENGINE_DEFAULTS = {
-        "openai": "gpt-4o",
-        "anthropic": "claude-35-sonnet",
-        "deepseek": "r1"
+        "deepseek": "deepseek-chat"
     }
 
     # Validate and set the model based on engine
@@ -148,9 +146,7 @@ def generate_code_chat():
 
     # Validate model based on engine
     VALID_MODELS = {
-        "openai": ["gpt-4o", "o1-mini"],
-        "anthropic": ["claude-35-sonnet"],
-        "deepseek": ["r1"]
+        "deepseek": ["deepseek-chat"]
     }
 
     if model not in VALID_MODELS[engine]:
@@ -168,7 +164,7 @@ def generate_code_chat():
 
 # What the user can do?
 
-The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-4o, and Anthropic Claude 3.5 Sonnet).
+The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: DeepSeek v3.2 via deepseek-chat).
 
 # Project
 
@@ -652,7 +648,10 @@ from math import *
         return response
 
     else:
-        client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        client = openai.OpenAI(
+            api_key=os.environ.get("DEEPSEEK_API_KEY"),
+            base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+        )
                 
         def get_preview(code: str, class_name: str):
             """
