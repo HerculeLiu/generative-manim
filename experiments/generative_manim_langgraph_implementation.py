@@ -65,8 +65,9 @@ import anthropic
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 anthropic.api_key = os.getenv('ANTHROPIC_API_KEY')
 
-expt_llm = "gpt-4-0125-preview"
-llm = ChatOpenAI(temperature=0, model=expt_llm, openai_api_key=OPENAI_API_KEY)
+# expt_llm = "gpt-4-0125-preview"
+expt_llm = "deepseek-r1"
+llm = ChatOpenAI(temperature=0, model=expt_llm, openai_api_key=OPENAI_API_KEY, base_url = os.environ.get("OPENAI_BASE_URL"))
 code_gen_chain = code_gen_prompt | llm.with_structured_output(code)
 
 question = "Draw three red circles"

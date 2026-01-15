@@ -648,10 +648,12 @@ from math import *
         return response
 
     else:
+
         client = openai.OpenAI(
             api_key=os.environ.get("DEEPSEEK_API_KEY"),
             base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
+
                 
         def get_preview(code: str, class_name: str):
             """

@@ -43,7 +43,7 @@ import os
 
 # Initial configuration
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-llm = ChatOpenAI(temperature=0, model="gpt-4-0125-preview", openai_api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(temperature=0, model="deepseek-r1", openai_api_key=OPENAI_API_KEY, base_url = os.environ.get("OPENAI_BASE_URL"))
 
 # Message template for the LLM
 code_gen_prompt = ChatPromptTemplate.from_messages(

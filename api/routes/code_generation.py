@@ -72,10 +72,12 @@ class GenScene(Scene):
             return jsonify({"error": str(e)}), 500
 
     else:
+
         client = OpenAI(
             api_key=os.getenv("DEEPSEEK_API_KEY"),
             base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
+
         messages = [
             {"role": "system", "content": general_system_prompt},
             {"role": "user", "content": prompt_content},
