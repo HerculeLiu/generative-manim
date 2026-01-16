@@ -46,7 +46,7 @@
       }
       .grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
         gap: 18px;
       }
       .panel {
@@ -136,7 +136,7 @@
         letter-spacing: 0.08em;
       }
       .scene-board {
-        grid-column: 2 / span 2;
+        grid-column: 2 / span 3;
       }
       .scene-stack {
         display: flex;
@@ -148,7 +148,7 @@
       }
       .scene-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 12px;
       }
       .scene-card {
@@ -169,6 +169,17 @@
         margin-top: 10px;
         gap: 8px;
         flex-wrap: wrap;
+      }
+      .scene-actions.stack {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .scene-actions label {
+        margin: 0;
+      }
+      .scene-actions select,
+      .scene-actions input {
+        margin-top: 6px;
       }
       .chip {
         font-size: 12px;
@@ -293,6 +304,26 @@
         return card;
       }
 
+      function buildCodeCard(scene, index) {
+        const card = document.createElement("div");
+        card.className = "scene-card";
+
+        const title = document.createElement("p");
+        title.className = "scene-title";
+        title.textContent = `Code ${index + 1}`;
+
+        const textarea = document.createElement("textarea");
+        textarea.value = scene.code || "";
+        textarea.addEventListener("input", (event) => {
+          state.scenes[index].code = event.target.value;
+        });
+
+        card.appendChild(title);
+        card.appendChild(textarea);
+
+        return card;
+      }
+
       function buildRenderCard(scene, index) {
         const card = document.createElement("div");
         card.className = "scene-card";
@@ -322,6 +353,42 @@
           card.appendChild(placeholder);
         }
 
+        const actions = document.createElement("div");
+        actions.className = "scene-actions stack";
+
+        const status = document.createElement("span");
+        status.className = "chip";
+        status.textContent = scene.renderStatus || "Ready";
+
+        const aspectLabel = document.createElement("label");
+        aspectLabel.textContent = "Aspect Ratio";
+
+        const aspectSelect = document.createElement("select");
+        ["16:9", "1:1", "9:16"].forEach((ratio) => {
+          const option = document.createElement("option");
+          option.value = ratio;
+          option.textContent = ratio;
+          if (scene.aspect_ratio === ratio) {
+            option.selected = true;
+          }
+          aspectSelect.appendChild(option);
+        });
+        aspectSelect.addEventListener("change", (event) => {
+          state.scenes[index].aspect_ratio = event.target.value;
+        });
+
+        const renderButton = document.createElement("button");
+        renderButton.className = "secondary";
+        renderButton.textContent = "Render From Code";
+        renderButton.addEventListener("click", () => renderFromCode(index));
+
+        actions.appendChild(status);
+        actions.appendChild(aspectLabel);
+        actions.appendChild(aspectSelect);
+        actions.appendChild(renderButton);
+
+        card.appendChild(actions);
+
         return card;
       }
 
@@ -338,6 +405,7 @@
             const row = document.createElement("div");
             row.className = "scene-row";
             row.appendChild(buildSceneCard(scene, index));
+            row.appendChild(buildCodeCard(scene, index));
             row.appendChild(buildRenderCard(scene, index));
             sceneBoardEl.appendChild(row);
           });
@@ -379,6 +447,9 @@
           state.scenes = prompts.map((item) => ({
             text: item.prompt || "",
             status: "Ready",
+            code: "",
+            renderStatus: "Ready",
+            aspect_ratio: "16:9",
             video_url: "",
           }));
 
@@ -408,6 +479,7 @@
         }
 
         scene.status = "Generating...";
+        scene.renderStatus = "Generating...";
         renderScenes();
 
         try {
@@ -424,6 +496,7 @@
           if (!res.ok) {
             const message = data && data.error ? data.error : "Request failed";
             scene.status = message;
+            scene.renderStatus = message;
             renderScenes();
             return;
           }
@@ -431,11 +504,63 @@
           if (data.video_url) {
             scene.video_url = data.video_url;
             scene.status = "Done.";
+            scene.renderStatus = "Done.";
+            scene.code = data.code || scene.code;
           } else {
             scene.status = "No video URL returned.";
+            scene.renderStatus = "No video URL returned.";
           }
         } catch (err) {
           scene.status = "Network error.";
+          scene.renderStatus = "Network error.";
+        }
+
+        renderScenes();
+      }
+
+      async function renderFromCode(index) {
+        const scene = state.scenes[index];
+        const code = (scene.code || "").trim();
+
+        if (!code) {
+          scene.renderStatus = "No code to render.";
+          renderScenes();
+          return;
+        }
+
+        scene.renderStatus = "Rendering...";
+        renderScenes();
+
+        try {
+          const res = await fetch("/v1/video/rendering", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              code,
+              file_class: "GenScene",
+              aspect_ratio: scene.aspect_ratio || "16:9",
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            const message = data && data.error ? data.error : "Render failed";
+            scene.renderStatus = message;
+            renderScenes();
+            return;
+          }
+
+          if (data.video_url) {
+            scene.video_url = data.video_url;
+            scene.renderStatus = "Done.";
+          } else {
+            scene.renderStatus = "No video URL returned.";
+          }
+        } catch (err) {
+          scene.renderStatus = "Network error.";
         }
 
         renderScenes();
