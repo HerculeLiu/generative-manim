@@ -237,6 +237,7 @@
           </div>
           <div class="actions">
             <button id="split">Split Into Scenes</button>
+            <button id="addScene" class="secondary">Add Scene</button>
             <button id="generateAll" class="secondary">Generate All</button>
             <span id="status" class="status">Ready.</span>
           </div>
@@ -255,6 +256,7 @@
     </div>
     <script>
       const splitBtn = document.getElementById("split");
+      const addSceneBtn = document.getElementById("addScene");
       const generateAllBtn = document.getElementById("generateAll");
       const statusEl = document.getElementById("status");
       const sceneBoardEl = document.getElementById("sceneBoard");
@@ -580,6 +582,17 @@
       }
 
       splitBtn.addEventListener("click", splitStory);
+      addSceneBtn.addEventListener("click", () => {
+        state.scenes.push({
+          text: "",
+          status: "Ready",
+          code: "",
+          renderStatus: "Ready",
+          aspect_ratio: "16:9",
+          video_url: "",
+        });
+        renderScenes();
+      });
       generateAllBtn.addEventListener("click", generateAllScenes);
 
       renderScenes();
