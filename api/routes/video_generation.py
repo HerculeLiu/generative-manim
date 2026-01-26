@@ -37,6 +37,9 @@ class GenScene(Scene):
 12. Do not apply scaling or morphing unless the prompt explicitly requests it. Default transformations should be only move, rotate, or flip.
 13. Frame usage: main objects should occupy roughly 70–85% of the frame width/height unless the prompt specifies otherwise.
 14. Use only Manim-defined color constants (e.g., BLUE, BLUE_A, BLUE_B, BLUE_C, BLUE_D, BLUE_E, GREEN, RED). Do not invent color names.
+15. If you add updaters: Scene.add_updater expects updater(dt); Mobject.add_updater expects updater(mobject, dt). Always include dt in the function signature.
+16. Do not use self.camera.frame unless using MovingCameraScene. Use config.frame_width/frame_height or self.camera.frame_width/frame_height instead.
+17. Scene does not support add_updater; attach updaters to a Mobject (or a hidden driver Mobject) and remove them from that same Mobject.
 """
 
 def strip_code_fences(code: str) -> str:
